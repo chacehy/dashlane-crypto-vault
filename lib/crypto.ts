@@ -60,7 +60,7 @@ export async function encrypt(data: string, keyBytes: Uint8Array): Promise<{ cip
     const iv = crypto.getRandomValues(new Uint8Array(IV_LEN));
     const cryptoKey = await crypto.subtle.importKey(
         'raw',
-        keyBytes,
+        keyBytes as any,
         AES_ALGO,
         false,
         ['encrypt']
@@ -88,16 +88,16 @@ export async function decrypt(ciphertext: string, keyBytes: Uint8Array, nonce: s
 
     const cryptoKey = await crypto.subtle.importKey(
         'raw',
-        keyBytes,
+        keyBytes as any,
         AES_ALGO,
         false,
         ['decrypt']
     );
 
     const decrypted = await crypto.subtle.decrypt(
-        { name: AES_ALGO, iv },
+        { name: AES_ALGO, iv } as any,
         cryptoKey,
-        data
+        data as any
     );
 
     return new TextDecoder().decode(decrypted);
@@ -110,7 +110,7 @@ export async function encryptMK(mk: Uint8Array, kek: Uint8Array): Promise<{ ciph
     const iv = crypto.getRandomValues(new Uint8Array(IV_LEN));
     const cryptoKey = await crypto.subtle.importKey(
         'raw',
-        kek,
+        kek as any,
         AES_ALGO,
         false,
         ['encrypt']
@@ -119,7 +119,7 @@ export async function encryptMK(mk: Uint8Array, kek: Uint8Array): Promise<{ ciph
     const encrypted = await crypto.subtle.encrypt(
         { name: AES_ALGO, iv } as any,
         cryptoKey,
-        mk
+        mk as any
     );
 
     return {
@@ -137,16 +137,16 @@ export async function decryptMK(encryptedMk: string, kek: Uint8Array, nonce: str
 
     const cryptoKey = await crypto.subtle.importKey(
         'raw',
-        kek,
+        kek as any,
         AES_ALGO,
         false,
         ['decrypt']
     );
 
     const decrypted = await crypto.subtle.decrypt(
-        { name: AES_ALGO, iv },
+        { name: AES_ALGO, iv } as any,
         cryptoKey,
-        data
+        data as any
     );
 
     return new Uint8Array(decrypted);
@@ -219,9 +219,9 @@ export async function importPrivateKey(encryptedJwk: string, kek: Uint8Array, no
  */
 export async function asymmetricEncrypt(data: Uint8Array, publicKey: CryptoKey): Promise<Uint8Array> {
     const encrypted = await crypto.subtle.encrypt(
-        { name: 'RSA-OAEP' },
+        { name: 'RSA-OAEP' } as any,
         publicKey,
-        data
+        data as any
     );
     return new Uint8Array(encrypted);
 }
@@ -231,9 +231,9 @@ export async function asymmetricEncrypt(data: Uint8Array, publicKey: CryptoKey):
  */
 export async function asymmetricDecrypt(ciphertext: Uint8Array, privateKey: CryptoKey): Promise<Uint8Array> {
     const decrypted = await crypto.subtle.decrypt(
-        { name: 'RSA-OAEP' },
+        { name: 'RSA-OAEP' } as any,
         privateKey,
-        ciphertext
+        ciphertext as any
     );
     return new Uint8Array(decrypted);
 }
