@@ -11,7 +11,11 @@ import { VaultUnlock } from '@/components/vault/VaultUnlock';
 import { VaultItemCard } from '@/components/vault/VaultItemCard';
 import { AddVaultItemModal } from '@/components/vault/AddVaultItemModal';
 import { ShareModal } from '@/components/vault/ShareModal';
-import { Share2, Lock, Plus, Users } from 'lucide-react';
+import { Share2, Lock, Plus, Users, Shield, LayoutDashboard, Activity } from 'lucide-react';
+import { SecurityDashboard } from '@/components/vault/SecurityDashboard';
+import { AdminConsole } from '@/components/admin/AdminConsole';
+
+import { LandingPage } from '@/components/LandingPage';
 
 export default function Home() {
   const {
@@ -27,11 +31,12 @@ export default function Home() {
   const [session, setSession] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [sharedItems, setSharedItems] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'personal' | 'shared'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'shared' | 'security' | 'admin'>('personal');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [sharingItem, setSharingItem] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -86,11 +91,22 @@ export default function Home() {
   };
 
   if (!session) {
-    return (
-      <div className="min-h-screen premium-gradient flex items-center justify-center p-4">
-        <AuthForm />
-      </div>
-    );
+    if (showAuth) {
+      return (
+        <div className="min-h-screen premium-gradient flex items-center justify-center p-4">
+          <div className="absolute top-8 left-8">
+            <button
+              onClick={() => setShowAuth(false)}
+              className="text-white/60 hover:text-white flex items-center gap-2 transition-colors"
+            >
+              ← Back to site
+            </button>
+          </div>
+          <AuthForm />
+        </div>
+      );
+    }
+    return <LandingPage onGetStarted={() => setShowAuth(true)} />;
   }
 
   if (isInitializing) {
@@ -136,6 +152,20 @@ export default function Home() {
               >
                 <Users size={16} />
                 <span className="text-sm font-medium">Shared</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('security')}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${activeTab === 'security' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+              >
+                <Shield size={16} />
+                <span className="text-sm font-medium">Security</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${activeTab === 'admin' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+              >
+                <LayoutDashboard size={16} />
+                <span className="text-sm font-medium">Admin</span>
               </button>
             </div>
 
@@ -186,6 +216,10 @@ export default function Home() {
               </div>
             )}
           </>
+        ) : activeTab === 'security' ? (
+          <SecurityDashboard items={items} />
+        ) : activeTab === 'admin' ? (
+          <AdminConsole />
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -213,20 +247,24 @@ export default function Home() {
         )}
       </main>
 
-      {showAddModal && (
-        <AddVaultItemModal
-          onClose={() => setShowAddModal(false)}
-          onAdd={handleAddItem}
-          loading={loading}
-        />
-      )}
+      {
+        showAddModal && (
+          <AddVaultItemModal
+            onClose={() => setShowAddModal(false)}
+            onAdd={handleAddItem}
+            loading={loading}
+          />
+        )
+      }
 
-      {sharingItem && (
-        <ShareModal
-          item={sharingItem}
-          onClose={() => setSharingItem(null)}
-        />
-      )}
-    </div>
+      {
+        sharingItem && (
+          <ShareModal
+            item={sharingItem}
+            onClose={() => setSharingItem(null)}
+          />
+        )
+      }
+    </div >
   );
 }
